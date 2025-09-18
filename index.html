@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Admin Guide</title>
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 5px 0 20px rgba(0,0,0,0.1);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.4em;
+        }
+
+        .sidebar-header p {
+            margin: 10px 0 0 0;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .sidebar-menu {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .sidebar-item {
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .sidebar-link {
+            display: block;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+            padding-left: 30px;
+        }
+
+        .sidebar-link.active {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border-left: 4px solid #2c3e50;
+        }
+
+        .sidebar-link.active:hover {
+            padding-left: 20px;
+        }
+
+        .problem-number {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            text-align: center;
+            line-height: 25px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .sidebar-link.active .problem-number {
+            background: white;
+            color: #3498db;
+        }
+
+        /* Toggle Button */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 200;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 300px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1em;
+        }
+
+        /* Hide old selector */
+        .problem-selector {
+            display: none;
+        }
+
+        .problem-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .problem-card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .problem-title {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h3 {
+            color: #34495e;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .section-content {
+            background: rgba(52, 152, 219, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #3498db;
+        }
+
+        .causes-list, .steps-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .causes-list li, .steps-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(52, 152, 219, 0.2);
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .causes-list li:before {
+            content: "⚠";
+            position: absolute;
+            left: 0;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .steps-list li:before {
+            content: counter(step-counter);
+            counter-increment: step-counter;
+            position: absolute;
+            left: 0;
+            background: #3498db;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .steps-list {
+            counter-reset: step-counter;
+        }
+
+        .simulation-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .simulation-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .sim-image {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sim-image:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .sim-image img {
+            max-width: 100%;
+            max-height: 80px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            object-fit: cover;
+        }
+
+        .sim-image-placeholder {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .sim-image-title {
+            font-size: 12px;
+            text-align: center;
+            word-break: break-word;
+        }
+
+        .download-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 15px 10px;
+        }
+
+        .download-btn:hover {
+            background: white;
+            color: #f5576c;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .welcome-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .welcome-card h2 {
+            color: #2c3e50;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .welcome-card p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        code {
+            background: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Modal Styles */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .modal-image {
+            width: 100%;
+            height: auto;
+            max-height: 70vh;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1001;
+            background: white;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            color: #000;
+            background: #f0f0f0;
+        }
+
+        .modal-caption {
+            text-align: center;
+            margin-top: 15px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Gallery Styles */
+        .gallery-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gallery-content {
+            position: relative;
+            max-width: 95%;
+            max-height: 95%;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .gallery-container {
+            position: relative;
+            width: 100%;
+            min-height: 400px;
+        }
+
+        .gallery-slide {
+            display: none;
+            text-align: center;
+        }
+
+        .gallery-slide.active {
+            display: block;
+        }
+
+        .gallery-slide img {
+            max-width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        .slide-caption {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .gallery-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .prev-btn, .next-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.3s ease;
+        }
+
+        .prev-btn:hover, .next-btn:hover {
+            background: #2980b9;
+        }
+
+        .slide-counter {
+            font-size: 16px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-toggle {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .main-content.sidebar-open {
+                margin-left: 0;
+            }
+        }
+</style>
+</head>
+<body>
+    <div class="main-layout">
+        <!-- Sidebar Toggle Button -->
+        <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>🌐 Network Admin</h2>
+                <p>Select a problem to diagnose</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="sidebar-item">
+                    <a class="sidebar-link" onclick="showProblem('')">
+                        <span class="problem-number">🏠</span>
+                        Welcome Guide
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" onclick="showProblem('wrong-ip')">
+                        <span class="problem-number">1</span>
+                        Wrong IP Configuration
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" onclick="showProblem('vlan-misconfig')">
+                        <span class="problem-number">2</span>
+                        VLAN Misconfiguration
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" onclick="showProblem('routing-protocol')">
+                        <span class="problem-number">3</span>
+                        Routing Copmlex RIP
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" onclick="showProblem('router-interface')">
+                        <span class="problem-number">4</span>
+                        Router Interface Down
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" onclick="showProblem('dhcp-failure')">
+                        <span class="problem-number">5</span>
+                        DHCP Server Failure
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" onclick="showProblem('router-conflict')">
+                        <span class="problem-number">6</span>
+                        Router ARP IP Conflict
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" onclick="showProblem('spanning-tree')">
+                        <span class="problem-number">7</span>
+                        Spanning Tree Issue
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" onclick="showProblem('port-security')">
+                        <span class="problem-number">8</span>
+                        Port Security Violation
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" onclick="showProblem('default-gateway')">
+                        <span class="problem-number">9</span>
+                        Default Gateway Issue
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" onclick="showProblem('acl-misconfig')">
+                        <span class="problem-number">10</span>
+                        ACL Misconfiguration
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" onclick="showProblem('ip-nat-pat')">
+                        <span class="problem-number">11</span>
+                        IP NAT PAT Issue
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" onclick="showProblem('dns-resolution')">
+                        <span class="problem-number">12</span>
+                        DNS Resolution Problem
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <div class="container">
+                <div class="header">
+                    <h1>🌐 Network Admin Guide</h1>
+                    <p>Comprehensive guide for diagnosing and resolving network infrastructure issues</p>
+                </div>
+
+                <div id="welcomeCard" class="welcome-card">
+                    <h2>Welcome to Network Admin Guide</h2>
+                    <p>This comprehensive admin guide contains detailed information about common network problems, their causes, and step-by-step solutions. Each problem includes simulation materials and downloadable packet tracer files for hands-on practice. Select a problem from the sidebar to get started.</p>
+                    <h2>About Me</h2>
+                    <p>
+                    <br>Name:Ahmet Yusuf Dursun
+                    <br>Student ID: 230315008
+                    <br>GitHub: <a href="https://github.com/ysfdursun" target="_blank">ysfdursun</a>
+                    <br>LinkedIn: <a href="https://www.linkedin.com/in/ahmet-yusuf-dursun-b08851277/" target="_blank">Ahmet Yusuf Dursun</a>
+                    <br>Contact: <a href="mailto:230315008@ogr.cbu.edu.tr" target="_blank">E-Mail</a>
+                    <br>University: <a href="https://www.cbu.edu.tr/" target="_blank">Celal Bayar University</a>
+                    <br>Department: <a href="https://bilgisayarmuh.mcbu.edu.tr/" target="_blank">Computer Engineering</a>
+                    </p>
+                </div>
+
+        <!-- Problem Cards -->
+        <div id="wrong-ip" class="problem-card">
+            <h2 class="problem-title">Wrong IP Address Configuration</h2>
+            
+            <div class="section">
+                <h3><span class="section-icon">📋</span>Problem Definition</h3>
+                <div class="section-content">
+                    Wrong IP address configurations prevent devices from communicating properly within the network, causing connectivity issues, routing problems, and inability to access network resources.
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔍</span>Symptoms</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Device cannot ping other devices in the same network</li>
+                        <li>Unable to access network resources or services</li>
+                        <li>"Destination host unreachable" error messages</li>
+                        <li>Network applications timing out or failing to connect</li>
+                        <li>IP conflict warnings appearing on screen</li>
+                        <li>Intermittent connectivity issues</li>
+                        <li>Default gateway unreachable</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">⚠</span>Potential Causes</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Incorrect IP address assignment outside valid subnet range</li>
+                        <li>Wrong subnet mask configuration</li>
+                        <li>IP address conflicts with other devices</li>
+                        <li>Typos in IP address configuration</li>
+                        <li>Misunderstanding of network addressing scheme</li>
+                        <li>Incorrect VLAN IP address assignment</li>
+                        <li>Wrong default gateway configuration</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔧</span>Solution Steps</h3>
+                <div class="section-content">
+                    <ol class="steps-list">
+                        <li>Verify current IP configuration: <code>ipconfig</code> or <code>show ip interface brief</code></li>
+                        <li>Check network documentation for correct IP scheme</li>
+                        <li>Verify subnet mask matches network requirements</li>
+                        <li>Test connectivity within same subnet: <code>ping [neighbor-ip]</code></li>
+                        <li>Correct IP address configuration</li>
+                        <li>Verify default gateway is in same subnet</li>
+                        <li>Update DHCP reservation if using DHCP</li>
+                        <li>Test connectivity after IP correction</li>
+                        <li>Document corrected IP configuration</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="simulation-section">
+                    <h3>🖼️ Simulation Materials</h3>
+                    <div class="simulation-images">
+                        <div class="sim-image" onclick="viewImageGallery('wrong-ip-gallery', [
+                            {file: '1-WrongIP/WrongIP/Model.png', title: 'Network Topology'},
+                            {file: '1-WrongIP/WrongIP/HatanınYapılışı.png', title: 'Problem Configuration'},
+                            {file: '1-WrongIP/WrongIP/Hata1.png', title: 'Error'},
+                            {file: '1-WrongIP/WrongIP/Hata2.png', title: 'Error'},
+                            {file: '1-WrongIP/WrongIP/Hata3.png', title: 'Error'},
+                            {file: '1-WrongIP/WrongIP/Çözüm.png', title: 'Solution'},
+                            {file: '1-WrongIP/WrongIP/Kanıt1.png', title: 'Proof'}
+                        ])">
+                            <div class="sim-image-placeholder">📸</div>
+                            <div class="sim-image-title">View Network Images(7)</div>
+                        </div>
+                    </div>
+                    <a href="1-WrongIP/Wrong_IP_Sorun.pkt" class="download-btn" download>
+                        📥 Download Simulation File (.pkt)
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div id="vlan-misconfig" class="problem-card">
+            <h2 class="problem-title">VLAN Misconfiguration</h2>
+            
+            <div class="section">
+                <h3><span class="section-icon">📋</span>Problem Definition</h3>
+                <div class="section-content">
+                    VLAN misconfiguration issues prevent proper network segmentation and inter-VLAN communication, causing devices in different VLANs to be unable to communicate or devices in the same VLAN to be improperly isolated.
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔍</span>Symptoms</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Devices in the same VLAN cannot communicate</li>
+                        <li>Inter-VLAN routing not working properly</li>
+                        <li>Broadcast traffic not reaching intended devices</li>
+                        <li>Network segmentation not functioning as expected</li>
+                        <li>Trunk links showing VLAN mismatch errors</li>
+                        <li>Some ports not forwarding traffic correctly</li>
+                        <li>VLAN database inconsistencies across switches</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">⚠</span>Potential Causes</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Incorrect VLAN assignment on switch ports</li>
+                        <li>Missing VLAN creation on switches</li>
+                        <li>Trunk port configuration errors</li>
+                        <li>Native VLAN mismatch on trunk links</li>
+                        <li>Inter-VLAN routing misconfiguration</li>
+                        <li>VLAN database synchronization issues</li>
+                        <li>Incorrect access port configuration</li>
+                        <li>VLAN pruning blocking required VLANs</li>
+                    </ul>
+                </div>
+            </div>
+
+    <div class="section">
+        <h3><span class="section-icon">🔧</span>Solution Steps</h3>
+        <div class="section-content">
+            <ol class="steps-list">
+                <li>Check VLAN configuration: <code>show vlan brief</code></li>
+                <li>Verify port VLAN assignments: <code>show interfaces switchport</code></li>
+                <li>Check trunk configuration: <code>show interfaces trunk</code></li>
+                <li>Create missing VLANs: <code>vlan [vlan-id]</code></li>
+                <li>Correct port VLAN assignments: <code>switchport access vlan [vlan-id]</code></li>
+                <li>Configure trunk ports properly: <code>switchport mode trunk</code></li>
+                <li>Verify native VLAN consistency on trunks</li>
+                <li>Configure inter-VLAN routing if needed</li>
+                <li>Test connectivity within and between VLANs</li>
+                <li>Save configuration changes</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="simulation-section">
+            <h3>🖼️ Simulation Materials</h3>
+            <div class="simulation-images">
+                <div class="sim-image" onclick="viewImageGallery('vlan-gallery', [
+                    {file: '2-VlanMisconfig/VLAN Misconfig/Model.png', title: 'Network Topology'},
+                    {file: '2-VlanMisconfig/VLAN Misconfig/Yanlış Yapılandırma.png', title: 'Problem Configuration'},
+                    {file: '2-VlanMisconfig/VLAN Misconfig/Hata1.png', title: 'Error'},
+                    {file: '2-VlanMisconfig/VLAN Misconfig/Hata2.png', title: 'Error'},
+                    {file: '2-VlanMisconfig/VLAN Misconfig/Çözüm.png', title: 'Solution'},
+                    {file: '2-VlanMisconfig/VLAN Misconfig/Kanıt.png', title: 'Proof'},
+                    {file: '2-VlanMisconfig/VLAN Misconfig/Kanıt2.png', title: 'Proof'}
+                ])">
+                    <div class="sim-image-placeholder">📸</div>
+                    <div class="sim-image-title">View VLAN Images (7)</div>
+                </div>
+            </div>
+            <a href="2-VlanMisconfig/VlanMisconfig_Sorun.pkt" class="download-btn" download>
+                📥 Download Simulation File (.pkt)
+            </a>
+        </div>
+    </div>
+        </div>
+        <div id="routing-protocol" class="problem-card">
+            <h2 class="problem-title">Routing Complex RIP</h2>
+            
+            <div class="section">
+                <h3><span class="section-icon">📋</span>Problem Definition</h3>
+                <div class="section-content">
+                    Complex RIP routing issues occur when routers fail to agree on the best paths through the network, leading to routing loops, suboptimal paths, or unreachable destinations in RIP-enabled networks.
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔍</span>Symptoms</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Routes not appearing in routing table</li>
+                        <li>Slow network convergence after topology changes</li>
+                        <li>Routing loops causing packet circulation</li>
+                        <li>Count-to-infinity problems with hop counts</li>
+                        <li>Intermittent reachability to remote networks</li>
+                        <li>RIP advertisements not being received</li>
+                        <li>Suboptimal path selection despite better routes available</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">⚠</span>Potential Causes</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>RIP routing protocol misconfiguration or version mismatch</li>
+                        <li>Network topology changes causing slow convergence</li>
+                        <li>Routing loops due to inadequate loop prevention</li>
+                        <li>Metric inconsistencies between routing protocols</li>
+                        <li>Timer mismatches in RIP configuration</li>
+                        <li>Network instability causing route flapping</li>
+                        <li>Authentication failures between RIP peers</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔧</span>Solution Steps</h3>
+                <div class="section-content">
+                    <ol class="steps-list">
+                        <li>Check routing table: <code>show ip route</code></li>
+                        <li>Verify routing protocol status: <code>show ip ospf neighbors</code></li>
+                        <li>Analyze routing protocol configuration: <code>show running-config | section router</code></li>
+                        <li>Check for routing loops: <code>traceroute [destination]</code></li>
+                        <li>Verify network connectivity between routers</li>
+                        <li>Correct routing protocol configuration inconsistencies</li>
+                        <li>Adjust timers if necessary for faster convergence</li>
+                        <li>Clear routing protocol processes: <code>clear ip route *</code></li>
+                        <li>Monitor convergence and verify stable routing</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="simulation-section">
+                    <h3>🖼️ Simulation Materials</h3>
+                    <div class="simulation-images">
+                        <div class="sim-image" onclick="viewImageGallery('routing-gallery', [
+                            {file: '3-Routing/RoutingProtocol/Model.png', title: 'Network Topology'},
+                            {file: '3-Routing/RoutingProtocol/Router2 Config.png', title: 'Router2 Configuration'},
+                            {file: '3-Routing/RoutingProtocol/Hata Oluşum.png', title: 'Problem Configuration'},
+                            {file: '3-Routing/RoutingProtocol/Hata1.png', title: 'Error'},
+                            {file: '3-Routing/RoutingProtocol/Hata2.png', title: 'Error'},
+                            {file: '3-Routing/RoutingProtocol/Çözüm.png', title: 'Solution Steps'},
+                            {file: '3-Routing/RoutingProtocol/Kanıt1.png', title: 'Proof'},
+                            {file: '3-Routing/RoutingProtocol/Kanıt2.png', title: 'Proof'}
+                        ])">
+                            <div class="sim-image-placeholder">📸</div>
+                            <div class="sim-image-title">View Routing Images(8)</div>
+                        </div>
+                    </div>
+                    <a href="3-Routing/RoutingConvergence.pkt" class="download-btn" download>
+                        📥 Download Simulation File (.pkt)
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div id="router-interface" class="problem-card">
+            <h2 class="problem-title">Router Interface Down</h2>
+            
+            <div class="section">
+                <h3><span class="section-icon">📋</span>Problem Definition</h3>
+                <div class="section-content">
+                    Router interface down issues prevent network connectivity through specific router ports, causing network segmentation and communication failures between different network segments.
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔍</span>Symptoms</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Interface status showing "down/down" or "administratively down"</li>
+                        <li>No link lights on router interface</li>
+                        <li>Connected devices cannot reach the router</li>
+                        <li>Routing table missing directly connected networks</li>
+                        <li>High error counts on interface statistics</li>
+                        <li>CRC errors or input/output drops</li>
+                        <li>Network segment completely isolated</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">⚠</span>Potential Causes</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Interface administratively shut down</li>
+                        <li>Physical cable disconnection or damage</li>
+                        <li>Port configuration mismatch (speed/duplex)</li>
+                        <li>Hardware failure on router interface</li>
+                        <li>Power issues affecting the interface</li>
+                        <li>Software or driver issues</li>
+                        <li>Network congestion causing interface errors</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔧</span>Solution Steps</h3>
+                <div class="section-content">
+                    <ol class="steps-list">
+                        <li>Check interface status: <code>show interfaces [interface]</code></li>
+                        <li>Verify physical connectivity and cable integrity</li>
+                        <li>Enable interface if shut down: <code>no shutdown</code></li>
+                        <li>Check for interface errors: <code>show interfaces summary</code></li>
+                        <li>Verify speed and duplex settings match connected device</li>
+                        <li>Reset interface configuration if needed</li>
+                        <li>Test with different cable or port if available</li>
+                        <li>Monitor interface statistics for stability</li>
+                        <li>Verify routing and connectivity after interface restoration</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="simulation-section">
+                    <h3>🖼️ Simulation Materials</h3>
+                    <div class="simulation-images">
+                        <div class="sim-image" onclick="viewImageGallery('interface-gallery', [
+                            {file: '4-RouterInterfaceDown/Router Interface Down/Model.png', title: 'Network Topology'},
+                            {file: '4-RouterInterfaceDown/Router Interface Down/Router2 Config.png', title: 'Router2 Configuration'},
+                            {file: '4-RouterInterfaceDown/Router Interface Down/Router1 Yanlış Yapılandırma.png', title: 'Problem Configuration'},
+                            {file: '4-RouterInterfaceDown/Router Interface Down/Problem.png', title: 'Problem'},
+                            {file: '4-RouterInterfaceDown/Router Interface Down/Hata1.png', title: 'Error'},
+                            {file: '4-RouterInterfaceDown/Router Interface Down/Hata2.png', title: 'Error'},
+                            {file: '4-RouterInterfaceDown/Router Interface Down/Hata3.png', title: 'Error'},
+                            {file: '4-RouterInterfaceDown/Router Interface Down/Router1reconfig.png', title: 'Solution'},
+                            {file: '4-RouterInterfaceDown/Router Interface Down/Kanıt1.png', title: 'Proof'},
+                            {file: '4-RouterInterfaceDown/Router Interface Down/Kanıt2.png', title: 'Proof'}
+                        ])">
+                            <div class="sim-image-placeholder">📸</div>
+                            <div class="sim-image-title">View Interface Images (10)</div>
+                        </div>
+                    </div>
+                    <a href="4-RouterInterfaceDown/Router_Interface_Down_Sorun.pkt" class="download-btn" download>
+                        📥 Download Simulation File (.pkt)
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div id="dhcp-failure" class="problem-card">
+            <h2 class="problem-title">DHCP Server Failure</h2>
+            
+            <div class="section">
+                <h3><span class="section-icon">📋</span>Problem Definition</h3>
+                <div class="section-content">
+                    DHCP server failures prevent client devices from automatically obtaining IP addresses, subnet masks, default gateways, and DNS server information, resulting in network connectivity issues.
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔍</span>Symptoms</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Clients receiving APIPA addresses (169.254.x.x)</li>
+                        <li>"Unable to obtain IP address" error messages</li>
+                        <li>New devices cannot join the network</li>
+                        <li>Existing DHCP leases expiring without renewal</li>
+                        <li>DHCP DISCOVER messages not receiving replies</li>
+                        <li>Network configuration showing "No network access"</li>
+                        <li>Manual IP configuration required for connectivity</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">⚠</span>Potential Causes</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>DHCP server service stopped or crashed</li>
+                        <li>DHCP pool exhaustion (no available IP addresses)</li>
+                        <li>Network connectivity issues to DHCP server</li>
+                        <li>DHCP scope misconfiguration</li>
+                        <li>Firewall blocking DHCP traffic (ports 67/68)</li>
+                        <li>DHCP relay configuration problems</li>
+                        <li>Database corruption on DHCP server</li>
+                        <li>Hardware failure on DHCP server</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔧</span>Solution Steps</h3>
+                <div class="section-content">
+                    <ol class="steps-list">
+                        <li>Check DHCP server service status</li>
+                        <li>Verify DHCP pool configuration: <code>show ip dhcp pool</code></li>
+                        <li>Check DHCP bindings: <code>show ip dhcp binding</code></li>
+                        <li>Test network connectivity to DHCP server</li>
+                        <li>Restart DHCP service if necessary</li>
+                        <li>Clear DHCP bindings if pool exhausted: <code>clear ip dhcp binding *</code></li>
+                        <li>Verify firewall rules for DHCP traffic</li>
+                        <li>Check DHCP relay configuration on routers</li>
+                        <li>Release and renew IP addresses on clients: <code>ipconfig /release</code>, <code>ipconfig /renew</code></li>
+                        <li>Monitor DHCP server logs for errors</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="simulation-section">
+                    <h3>🖼️ Simulation Materials</h3>
+                    <div class="simulation-images">
+                        <div class="sim-image" onclick="viewImageGallery('dhcp-gallery', [
+                            {file: '5-DHCPFail/DHCP SERVER FAILURE/Model.png', title: 'Network Topology'},
+                            {file: '5-DHCPFail/DHCP SERVER FAILURE/Hata1.png', title: 'Error'},
+                            {file: '5-DHCPFail/DHCP SERVER FAILURE/Çözüm.png', title: 'Solution'},
+                            {file: '5-DHCPFail/DHCP SERVER FAILURE/Kanıt1.png', title: 'Proof'},
+                            {file: '5-DHCPFail/DHCP SERVER FAILURE/Kanıt2.png', title: 'Proof'},
+                        ])">
+                            <div class="sim-image-placeholder">📸</div>
+                            <div class="sim-image-title">View DHCP Images (5)</div>
+                        </div>
+                    </div>
+                    <a href="5-DHCPFail/DHCP Server Failure.pkt" class="download-btn" download>
+                        📥 Download Simulation File (.pkt)
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="router-conflict" class="problem-card">
+            <h2 class="problem-title">Router ARP IP Conflict</h2>
+            
+            <div class="section">
+                <h3><span class="section-icon">📋</span>Problem Definition</h3>
+                <div class="section-content">
+                    ARP IP conflicts occur when multiple devices claim the same IP address, causing intermittent connectivity issues, packet loss, and network instability as devices compete for the same network identity.
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔍</span>Symptoms</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Intermittent network connectivity</li>
+                        <li>"IP address conflict" warning messages</li>
+                        <li>ARP table showing inconsistent MAC addresses</li>
+                        <li>Ping responses from unexpected MAC addresses</li>
+                        <li>Network performance degradation</li>
+                        <li>Some packets reaching wrong destinations</li>
+                        <li>Duplicate IP address detection alerts</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">⚠</span>Potential Causes</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Duplicate static IP address assignments</li>
+                        <li>DHCP server assigning already-used IP addresses</li>
+                        <li>Network device with corrupted ARP table</li>
+                        <li>Rogue DHCP server on the network</li>
+                        <li>Network interface cloning or virtualization issues</li>
+                        <li>Incorrect subnet mask causing IP overlap</li>
+                        <li>ARP spoofing or malicious network activity</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔧</span>Solution Steps</h3>
+                <div class="section-content">
+                    <ol class="steps-list">
+                        <li>Identify conflicting devices: <code>show arp</code> or <code>arp -a</code></li>
+                        <li>Check for duplicate IP assignments in DHCP scope</li>
+                        <li>Clear ARP table: <code>clear arp</code> or <code>arp -d *</code></li>
+                        <li>Identify devices using conflicting IP addresses</li>
+                        <li>Change IP address on one of the conflicting devices</li>
+                        <li>Update DHCP reservations to prevent future conflicts</li>
+                        <li>Verify network subnet configuration</li>
+                        <li>Scan for rogue DHCP servers on the network</li>
+                        <li>Monitor ARP table for stability after resolution</li>
+                        <li>Implement ARP security measures if needed</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="simulation-section">
+                    <h3>🖼️ Simulation Materials</h3>
+                    <div class="simulation-images">
+                        <div class="sim-image" onclick="viewImageGallery('conflict-gallery', [
+                            {file: '6-RouterArasıIPConflict/RouterArasıIPConflict/Model.png', title: 'Network Topology'},
+                            {file: '6-RouterArasıIPConflict/RouterArasıIPConflict/Router2SorunOluşum.png', title: 'Error Configuration'},
+                            {file: '6-RouterArasıIPConflict/RouterArasıIPConflict/R1IPRoute.png', title: 'Router1 IP Route'},
+                            {file: '6-RouterArasıIPConflict/RouterArasıIPConflict/R1ShowArp.png', title: 'Router1 ARP Table'},
+                            {file: '6-RouterArasıIPConflict/RouterArasıIPConflict/R2IPRoute.png', title: 'Router2 IP Route'},
+                            {file: '6-RouterArasıIPConflict/RouterArasıIPConflict/R2ShowArp.png', title: 'Router2 ARP Table'},
+                            {file: '6-RouterArasıIPConflict/RouterArasıIPConflict/Hata1.png', title: 'Error'},
+                            {file: '6-RouterArasıIPConflict/RouterArasıIPConflict/Çözüm.png', title: 'Solution'},
+                        ])">
+                            <div class="sim-image-placeholder">📸</div>
+                            <div class="sim-image-title">View ARP Conflict Images (8)</div>
+                        </div>
+                    </div>
+                    <a href="6-RouterArasıIPConflict/Router Ip conflict sorun.pkt" class="download-btn" download>
+                        📥 Download Simulation File (.pkt)
+                    </a>
+                </div>
+            </div>
+        </div>
+
+         <div id="spanning-tree" class="problem-card">
+            <h2 class="problem-title">Spanning Tree Protocol Issue</h2>
+            
+            <div class="section">
+                <h3><span class="section-icon">📋</span>Problem Definition</h3>
+                <div class="section-content">
+                    Spanning Tree Protocol (STP) issues can cause network loops, broadcast storms, or unnecessary blocking of links, leading to network instability, poor performance, or complete network failure.
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔍</span>Symptoms</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Network broadcast storms consuming bandwidth</li>
+                        <li>Slow network convergence after topology changes</li>
+                        <li>Ports stuck in blocking or learning state</li>
+                        <li>Unexpected path selection in redundant networks</li>
+                        <li>Network loops causing packet duplication</li>
+                        <li>Root bridge changes causing network instability</li>
+                        <li>High CPU utilization on switches during convergence</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">⚠</span>Potential Causes</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Incorrect STP root bridge selection</li>
+                        <li>STP port states stuck in blocking or listening</li>
+                        <li>STP convergence taking too long</li>
+                        <li>Mismatched STP versions across switches</li>
+                        <li>Incorrect port priorities or path costs</li>
+                        <li>Physical network loops not detected by STP</li>
+                        <li>BPDU guard or root guard misconfiguration</li>
+                        <li>Unidirectional link failures</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔧</span>Solution Steps</h3>
+                <div class="section-content">
+                    <ol class="steps-list">
+                        <li>Check STP status: <code>show spanning-tree</code></li>
+                        <li>Verify root bridge: <code>show spanning-tree root</code></li>
+                        <li>Check port states: <code>show spanning-tree interface [interface]</code></li>
+                        <li>Identify blocked and forwarding ports</li>
+                        <li>Adjust bridge priorities if needed: <code>spanning-tree vlan [vlan] priority [priority]</code></li>
+                        <li>Configure port priorities or costs if necessary</li>
+                        <li>Clear spanning-tree counters: <code>clear spanning-tree counters</code></li>
+                        <li>Enable rapid spanning-tree if appropriate: <code>spanning-tree mode rapid-pvst</code></li>
+                        <li>Monitor convergence time and network stability</li>
+                        <li>Verify no broadcast storms or loops exist</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="simulation-section">
+                    <h3>🖼️ Simulation Materials</h3>
+                    <div class="simulation-images">
+                        <div class="sim-image" onclick="viewImageGallery('stp-gallery', [
+                            {file: '7-Spanning Tree/Spanning Tree/Model.png', title: 'Network Topology'},
+                            {file: '7-Spanning Tree/Spanning Tree/Sw1.png', title: 'Switch1 Configuration'},
+                            {file: '7-Spanning Tree/Spanning Tree/Sw2.png', title: 'Switch2 Configuration'},
+                            {file: '7-Spanning Tree/Spanning Tree/Sorun.png', title: 'Problem'},
+                            {file: '7-Spanning Tree/Spanning Tree/Hata1.png', title: 'Error'},
+                            {file: '7-Spanning Tree/Spanning Tree/Çözüm.png', title: 'Solution'},
+                            {file: '7-Spanning Tree/Spanning Tree/Kanıt1.png', title: 'Proof'},
+                            {file: '7-Spanning Tree/Spanning Tree/Kanıt2.png', title: 'Proof'},
+                        ])">
+                            <div class="sim-image-placeholder">📸</div>
+                            <div class="sim-image-title">View STP Images (8)</div>
+                        </div>
+                    </div>
+                    <a href="7-Spanning Tree/Spanning_Tree_Sorun.pkt" class="download-btn" download>
+                        📥 Download Simulation File (.pkt)
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="port-security" class="problem-card">
+            <h2 class="problem-title">Port Security Violation</h2>
+            
+            <div class="section">
+                <h3><span class="section-icon">📋</span>Problem Definition</h3>
+                <div class="section-content">
+                    Port security violations occur when a switch port receives frames from MAC addresses that exceed the configured maximum or from unauthorized MAC addresses. This security feature helps prevent unauthorized access and MAC address spoofing attacks.
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔍</span>Symptoms</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Switch port automatically shutdown (err-disabled)</li>
+                        <li>Security violation log messages appearing</li>
+                        <li>Device suddenly losing network connectivity</li>
+                        <li>Port LED turning amber/orange on switch</li>
+                        <li>Maximum MAC address limit exceeded warnings</li>
+                        <li>Unauthorized device access blocked</li>
+                        <li>Port security counters incrementing</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">⚠</span>Potential Causes</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Maximum MAC address limit exceeded on the port</li>
+                        <li>Unauthorized device connected to secured port</li>
+                        <li>MAC address aging timer too short</li>
+                        <li>Incorrect port security configuration</li>
+                        <li>Network loops causing MAC address flapping</li>
+                        <li>Virtual machines or containers changing MAC addresses</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔧</span>Solution Steps</h3>
+                <div class="section-content">
+                    <ol class="steps-list">
+                        <li>Check port security status: <code>show port-security interface [interface]</code></li>
+                        <li>Identify violation type and cause: <code>show port-security</code></li>
+                        <li>Clear security violations: <code>clear port-security sticky [interface]</code></li>
+                        <li>Adjust maximum MAC addresses if needed: <code>switchport port-security maximum [number]</code></li>
+                        <li>Configure appropriate violation action: <code>switchport port-security violation {protect|restrict|shutdown}</code></li>
+                        <li>Re-enable the port if shut down: <code>shutdown / no shutdown</code></li>
+                        <li>Monitor port status and verify normal operation</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="simulation-section">
+                    <h3>🖼️ Simulation Materials</h3>
+                    <div class="simulation-images">
+                        <div class="sim-image" onclick="viewImageGallery('security-gallery', [
+                            {file: '8-Port Security Violation/PortSecurityViolation/Model.png', title: 'Network Topology'},
+                            {file: '8-Port Security Violation/PortSecurityViolation/HataOluşum.png', title: 'Error Configuration'},
+                            {file: '8-Port Security Violation/PortSecurityViolation/Mac Address Table Bağlı.png', title: 'MAC Address Table'},
+                            {file: '8-Port Security Violation/PortSecurityViolation/SecurityShow.png', title: 'Security Show'},
+                            {file: '8-Port Security Violation/PortSecurityViolation/Hata1.png', title: 'Error'},
+                            {file: '8-Port Security Violation/PortSecurityViolation/Hata2.png', title: 'Error'},
+                            {file: '8-Port Security Violation/PortSecurityViolation/Hata3.png', title: 'Error'},
+                            {file: '8-Port Security Violation/PortSecurityViolation/Çözüm.png', title: 'Solution'},
+                        ])">
+                            <div class="sim-image-placeholder">📸</div>
+                            <div class="sim-image-title">View Security Images (8)</div>
+                        </div>
+                    </div>
+                    <a href="8-Port Security Violation/PortSecurityViolation_Sorun.pkt" class="download-btn" download>
+                        📥 Download Simulation File (.pkt)
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="default-gateway" class="problem-card">
+            <h2 class="problem-title">Default Gateway Issue</h2>
+            
+            <div class="section">
+                <h3><span class="section-icon">📋</span>Problem Definition</h3>
+                <div class="section-content">
+                    Default gateway issues prevent devices from communicating with networks outside their local subnet. This critical networking component acts as the router interface that forwards traffic to remote networks.
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔍</span>Symptoms</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Cannot reach devices on remote networks</li>
+                        <li>Internet access not working</li>
+                        <li>Local network communication works fine</li>
+                        <li>"Destination host unreachable" for external IPs</li>
+                        <li>Ping to default gateway fails</li>
+                        <li>Default route missing from routing table</li>
+                        <li>DNS resolution fails for external domains</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">⚠</span>Potential Causes</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Incorrect default gateway IP address configuration</li>
+                        <li>Default gateway device (router) is down or unreachable</li>
+                        <li>Network interface on gateway device is disabled</li>
+                        <li>Routing table misconfiguration on gateway device</li>
+                        <li>DHCP server providing wrong gateway information</li>
+                        <li>VLAN misconfiguration preventing gateway access</li>
+                        <li>Firewall or ACL blocking gateway communication</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="section">
+                <h3><span class="section-icon">🔧</span>Solution Steps</h3>
+                <div class="section-content">
+                    <ol class="steps-list">
+                        <li>Verify current gateway configuration: <code>ipconfig /all</code> or <code>ip route show</code></li>
+                        <li>Test connectivity to gateway: <code>ping [gateway-ip]</code></li>
+                        <li>Check gateway device status and interface states</li>
+                        <li>Verify routing table on gateway device: <code>show ip route</code></li>
+                        <li>Correct gateway IP address if misconfigured</li>
+                        <li>Restart network interface or DHCP client if needed</li>
+                        <li>Verify VLAN configuration and inter-VLAN routing</li>
+                        <li>Test end-to-end connectivity to remote networks</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="simulation-section">
+                    <h3>🖼️ Simulation Materials</h3>
+                    <div class="simulation-images">
+                        <div class="sim-image" onclick="viewImageGallery('gateway-gallery', [
+                            {file: '9-DefaultGatewayIssue/DefaultGateway/Model.png', title: 'Network Topology'},
+                            {file: '9-DefaultGatewayIssue/DefaultGateway/HataOluşum.png', title: 'Error Configuration'},
+                            {file: '9-DefaultGatewayIssue/DefaultGateway/Hata1.png', title: 'Error'},
+                            {file: '9-DefaultGatewayIssue/DefaultGateway/Hata2.png', title: 'Error'},
+                            {file: '9-DefaultGatewayIssue/DefaultGateway/Çözüm.png', title: 'Solution'},
+                            {file: '9-DefaultGatewayIssue/DefaultGateway/Kanıt1.png', title: 'Proof'},
+                            {file: '9-DefaultGatewayIssue/DefaultGateway/Kanıt2.png', title: 'Proof'},
+                        ])">
+                            <div class="sim-image-placeholder">📸</div>
+                            <div class="sim-image-title">View Gateway Images (7)</div>
+                        </div>
+                    </div>
+                    <a href="9-DefaultGatewayIssue/DefaultGatewayIssue.pkt" class="download-btn" download>
+                        📥 Download Simulation File (.pkt)
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div id="acl-misconfig" class="problem-card">
+            <h2 class="problem-title">ACL Misconfiguration</h2>
+            
+            <div class="section">
+                <h3><span class="section-icon">📋</span>Problem Definition</h3>
+                <div class="section-content">
+                    Access Control List (ACL) misconfigurations can block legitimate traffic or allow unauthorized access. ACLs are critical security components that filter network traffic based on defined rules and criteria.
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔍</span>Symptoms</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Legitimate traffic being blocked unexpectedly</li>
+                        <li>Services not accessible from certain networks</li>
+                        <li>Connection timeouts to specific destinations</li>
+                        <li>Asymmetric routing causing connection issues</li>
+                        <li>Some protocols working while others fail</li>
+                        <li>ACL hit counters not incrementing as expected</li>
+                        <li>Security policies not being enforced properly</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">⚠</span>Potential Causes</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Incorrect ACL rule order (more specific rules after general ones)</li>
+                        <li>Wrong source or destination IP addresses in ACL entries</li>
+                        <li>Implicit deny rule blocking required traffic</li>
+                        <li>ACL applied to wrong interface or direction</li>
+                        <li>Wildcard mask errors in ACL statements</li>
+                        <li>Missing permit statements for essential protocols</li>
+                        <li>Conflicting ACL rules creating unintended behavior</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔧</span>Solution Steps</h3>
+                <div class="section-content">
+                    <ol class="steps-list">
+                        <li>Display current ACL configuration: <code>show access-lists</code></li>
+                        <li>Check ACL application on interfaces: <code>show ip interface [interface]</code></li>
+                        <li>Analyze ACL hit counters: <code>show access-lists [acl-name]</code></li>
+                        <li>Identify problematic ACL entries blocking legitimate traffic</li>
+                        <li>Reorder ACL entries if needed (remove and re-add)</li>
+                        <li>Correct IP addresses and wildcard masks in ACL statements</li>
+                        <li>Add explicit permit statements for required traffic</li>
+                        <li>Test connectivity after ACL modifications</li>
+                        <li>Monitor ACL hit counters to verify proper operation</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="simulation-section">
+                    <h3>🖼️ Simulation Materials</h3>
+                    <div class="simulation-images">
+                        <div class="sim-image" onclick="viewImageGallery('acl-gallery', [
+                            {file: '10-ACL Misconfig/ACL Misconfig/Model.png', title: 'ACL Network Model'},
+                            {file: '10-ACL Misconfig/ACL Misconfig/Hata Oluşum.png', title: 'ACL Misconfiguration'},
+                            {file: '10-ACL Misconfig/ACL Misconfig/Hata1.png', title: 'Error'},
+                            {file: '10-ACL Misconfig/ACL Misconfig/Çözüm.png', title: 'Solution'},
+                            {file: '10-ACL Misconfig/ACL Misconfig/Kanıt1.png', title: 'Proof'}
+                        ])">
+                            <div class="sim-image-placeholder">📸</div>
+                            <div class="sim-image-title">View ACL Images (5)</div>
+                        </div>
+                    </div>
+                    <a href="10-ACL Misconfig/ACL Misconfiguration.pkt" class="download-btn" download>
+                        📥 Download Simulation File (.pkt)
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="ip-nat-pat" class="problem-card">
+            <h2 class="problem-title">IP NAT PAT Configuration Issue</h2>
+            
+            <div class="section">
+                <h3><span class="section-icon">📋</span>Problem Definition</h3>
+                <div class="section-content">
+                    Network Address Translation (NAT) with Port Address Translation (PAT) issues prevent internal devices from accessing external networks. NAT/PAT translates private IP addresses to public addresses for internet connectivity.
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔍</span>Symptoms</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Internal devices cannot access external networks</li>
+                        <li>Internet connectivity not working from LAN</li>
+                        <li>NAT translation table shows no entries</li>
+                        <li>External services not reachable from internal network</li>
+                        <li>Outbound connections timing out</li>
+                        <li>NAT pool exhaustion messages</li>
+                        <li>Return traffic not reaching internal devices</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">⚠</span>Potential Causes</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Incorrect NAT inside/outside interface designation</li>
+                        <li>Missing or incorrect NAT access list configuration</li>
+                        <li>Wrong NAT pool configuration or exhaustion</li>
+                        <li>Firewall blocking NAT translations</li>
+                        <li>Routing issues preventing NAT functionality</li>
+                        <li>NAT translation table corruption or overflow</li>
+                        <li>Incorrect overload (PAT) configuration</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔧</span>Solution Steps</h3>
+                <div class="section-content">
+                    <ol class="steps-list">
+                        <li>Verify NAT configuration: <code>show running-config | include nat</code></li>
+                        <li>Check NAT translations: <code>show ip nat translations</code></li>
+                        <li>Verify inside/outside interface designation: <code>show ip nat statistics</code></li>
+                        <li>Test NAT access list: <code>show access-lists [nat-acl]</code></li>
+                        <li>Clear NAT translations if needed: <code>clear ip nat translation *</code></li>
+                        <li>Correct NAT pool or overload configuration</li>
+                        <li>Verify routing for NAT traffic</li>
+                        <li>Test connectivity from internal to external networks</li>
+                        <li>Monitor NAT statistics and translation table</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="simulation-section">
+                    <h3>🖼️ Simulation Materials</h3>
+                    <div class="simulation-images">
+                        <div class="sim-image" onclick="viewImageGallery('nat-gallery', [
+                            {file: '11-IP_NAT_PAT/nat-pat/Model.png', title: 'NAT/PAT Model'},
+                            {file: '11-IP_NAT_PAT/nat-pat/Hata1.png', title: 'Error'},
+                            {file: '11-IP_NAT_PAT/nat-pat/Çözüm-Doğrusu.png', title: 'Solution'},
+                            {file: '11-IP_NAT_PAT/nat-pat/Kanıt1.png', title: 'Proof'}
+                        ])">
+                            <div class="sim-image-placeholder">📸</div>
+                            <div class="sim-image-title">View NAT/PAT Images (4)</div>
+                        </div>
+                    </div>
+                    <a href="11-IP_NAT_PAT/IP-NAT-PAT.pkt" class="download-btn" download>
+                        📥 Download Simulation File (.pkt)
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="dns-resolution" class="problem-card">
+            <h2 class="problem-title">DNS Resolution Problem</h2>
+            
+            <div class="section">
+                <h3><span class="section-icon">📋</span>Problem Definition</h3>
+                <div class="section-content">
+                    DNS resolution problems prevent devices from translating domain names to IP addresses, resulting in inability to access websites and services by name while IP-based access may still work.
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔍</span>Symptoms</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Cannot access websites by domain name</li>
+                        <li>"Server not found" or "DNS error" messages</li>
+                        <li>Direct IP access works but domain names fail</li>
+                        <li>Slow website loading or timeouts</li>
+                        <li>Email services not working properly</li>
+                        <li>Network applications failing to resolve hostnames</li>
+                        <li>nslookup or dig commands returning errors</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">⚠</span>Potential Causes</h3>
+                <div class="section-content">
+                    <ul class="causes-list">
+                        <li>Incorrect DNS server configuration on client devices</li>
+                        <li>DNS server unavailable or not responding</li>
+                        <li>Network connectivity issues to DNS servers</li>
+                        <li>DNS cache corruption on client or server</li>
+                        <li>Firewall blocking DNS traffic (port 53)</li>
+                        <li>DNS server misconfiguration or zone file errors</li>
+                        <li>DHCP providing incorrect DNS server addresses</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3><span class="section-icon">🔧</span>Solution Steps</h3>
+                <div class="section-content">
+                    <ol class="steps-list">
+                        <li>Test DNS resolution: <code>nslookup [domain]</code> or <code>dig [domain]</code></li>
+                        <li>Check DNS server configuration: <code>ipconfig /all</code></li>
+                        <li>Test connectivity to DNS servers: <code>ping [dns-server]</code></li>
+                        <li>Clear DNS cache: <code>ipconfig /flushdns</code></li>
+                        <li>Try alternative DNS servers (8.8.8.8, 1.1.1.1)</li>
+                        <li>Verify firewall rules for DNS traffic</li>
+                        <li>Check DHCP DNS server assignments</li>
+                        <li>Restart DNS service on server if applicable</li>
+                        <li>Verify DNS zone files and records</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="simulation-section">
+                    <h3>🖼️ Simulation Materials</h3>
+                    <div class="simulation-images">
+                        <div class="sim-image" onclick="viewImageGallery('dns-gallery', [
+                            {file: '12-DNS Resolution/DNS RESOLUTION/Model.png', title: 'Network Topology'},
+                            {file: '12-DNS Resolution/DNS RESOLUTION/HataOluşum.png', title: 'Error Configuration'},
+                            {file: '12-DNS Resolution/DNS RESOLUTION/Hata1.png', title: 'Error'},
+                            {file: '12-DNS Resolution/DNS RESOLUTION/Hata2.png', title: 'Error'},
+                            {file: '12-DNS Resolution/DNS RESOLUTION/Çözüm.png', title: 'Solution'},
+                            {file: '12-DNS Resolution/DNS RESOLUTION/Kanıt1.png', title: 'Proof'},
+                            {file: '12-DNS Resolution/DNS RESOLUTION/Kanıt2.png', title: 'Proof'}
+                        ])">
+                            <div class="sim-image-placeholder">📸</div>
+                            <div class="sim-image-title">View DNS Images (7)</div>
+                        </div>
+                    </div>
+                    <a href="12-DNS Resolution/DNS Resolution Problem.pkt" class="download-btn" download>
+                        📥 Download Simulation File (.pkt)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+        function showProblem(problemId) {
+            const welcomeCard = document.getElementById('welcomeCard');
+            const allCards = document.querySelectorAll('.problem-card');
+            const allSidebarLinks = document.querySelectorAll('.sidebar-link');
+            
+            // Remove active class from all sidebar links
+            allSidebarLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Add active class to clicked link
+            event.target.closest('.sidebar-link').classList.add('active');
+            
+            // Hide all cards
+            allCards.forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            if (problemId === '') {
+                welcomeCard.style.display = 'block';
+            } else {
+                welcomeCard.style.display = 'none';
+                const selectedCard = document.getElementById(problemId);
+                if (selectedCard) {
+                    selectedCard.classList.add('active');
+                }
+            }
+
+            // Close sidebar on mobile after selection
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('open');
+            mainContent.classList.toggle('sidebar-open');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar');
+                const toggle = document.querySelector('.sidebar-toggle');
+                
+                if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
+                    sidebar.classList.remove('open');
+                    document.getElementById('mainContent').classList.remove('sidebar-open');
+                }
+            }
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set welcome as active by default
+            document.querySelector('.sidebar-link').classList.add('active');
+            showProblem('');
+        });
+
+        // Mevcut JavaScript fonksiyonlarınız (viewImage, viewImageGallery, vs.) buraya devam edecek
+        // Single image viewer
+        function viewImage(imagePath, title = 'Simulation Image') {
+            const modal = document.createElement('div');
+            modal.className = 'image-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-btn" onclick="closeModal(this)">&times;</span>
+                    <img src="${imagePath}" alt="${title}" class="modal-image" 
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIE5vdCBGb3VuZDwvdGV4dD48L3N2Zz4=';">
+                    <div class="modal-caption">
+                        <h3>${title}</h3>
+                        <p>${imagePath}</p>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            modal.style.display = 'flex';
+        }
+
+        // Image gallery viewer
+        let currentSlideIndex = 0;
+        let currentGalleryImages = [];
+
+        function viewImageGallery(galleryId, images) {
+            currentGalleryImages = images;
+            currentSlideIndex = 0;
+            
+            const modal = document.createElement('div');
+            modal.className = 'gallery-modal';
+            modal.id = galleryId;
+            
+            let imageHTML = '';
+            images.forEach((image, index) => {
+                imageHTML += `
+                    <div class="gallery-slide ${index === 0 ? 'active' : ''}">
+                        <img src="${image.file}" alt="${image.title}" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIE5vdCBGb3VuZDwvdGV4dD48L3N2Zz4=';">
+                        <div class="slide-caption">${image.title}</div>
+                    </div>
+                `;
+            });
+            
+            modal.innerHTML = `
+                <div class="gallery-content">
+                    <span class="close-btn" onclick="closeModal(this)">&times;</span>
+                    <div class="gallery-container">
+                        ${imageHTML}
+                    </div>
+                    <div class="gallery-controls">
+                        <button class="prev-btn" onclick="changeSlide(-1)">❮ Previous</button>
+                        <div class="slide-counter">
+                            <span id="current-slide">1</span> / ${images.length}
+                        </div>
+                        <button class="next-btn" onclick="changeSlide(1)">Next ❯</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            modal.style.display = 'flex';
+        }
+
+        function changeSlide(direction) {
+            const slides = document.querySelectorAll('.gallery-slide');
+            if (slides.length === 0) return;
+            
+            slides[currentSlideIndex].classList.remove('active');
+            
+            currentSlideIndex += direction;
+            if (currentSlideIndex >= slides.length) currentSlideIndex = 0;
+            if (currentSlideIndex < 0) currentSlideIndex = slides.length - 1;
+            
+            slides[currentSlideIndex].classList.add('active');
+            const counterElement = document.getElementById('current-slide');
+            if (counterElement) {
+                counterElement.textContent = currentSlideIndex + 1;
+            }
+        }
+
+        function closeModal(element) {
+            const modal = element.closest('.image-modal, .gallery-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+</script>
+</body>
+</html>
